@@ -3,6 +3,8 @@ package main
 import (
 	"log/slog"
 	"mauroproject/internal/config"
+	"mauroproject/internal/lib/logger/sl"
+	"mauroproject/internal/storage/sqlite"
 	"os"
 )
 
@@ -24,7 +26,14 @@ func main() {
 
 	log.Info("starting server", slog.String("env", cfg.Env))
 	log.Debug("debug messages are enabled")
-	//todo init storage (sqlite)
+
+	//init storage (sqlite)
+	storage, err := sqlite.New(cfg.StoragePath)
+	if err != nil {
+		log.Error("failed to init storage", sl.Err(err))
+		os.Exit(1)
+	}
+	_ = storage
 	//todo init router (chi, render)
 	//todo init server
 }
