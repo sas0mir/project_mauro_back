@@ -6,6 +6,9 @@ import (
 	"mauroproject/internal/lib/logger/sl"
 	"mauroproject/internal/storage/sqlite"
 	"os"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 const (
@@ -33,8 +36,14 @@ func main() {
 		log.Error("failed to init storage", sl.Err(err))
 		os.Exit(1)
 	}
-	_ = storage
+
 	//todo init router (chi, render)
+	router := chi.NewRouter()
+
+	//middleware
+	router.Use(middleware.RequestID)
+	router.Use(middleware.RealIP)
+	router.Use(middleware.Logger)
 	//todo init server
 }
 
