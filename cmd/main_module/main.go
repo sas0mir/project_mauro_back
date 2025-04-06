@@ -3,8 +3,7 @@ package main
 import (
 	"log/slog"
 	"mauroproject/internal/config"
-	"mauroproject/internal/lib/logger/sl"
-	"mauroproject/internal/storage/sqlite"
+	"net/http"
 	"os"
 
 	"github.com/go-chi/chi/v5"
@@ -31,11 +30,11 @@ func main() {
 	log.Debug("debug messages are enabled")
 
 	//init storage (sqlite)
-	storage, err := sqlite.New(cfg.StoragePath)
-	if err != nil {
-		log.Error("failed to init storage", sl.Err(err))
-		os.Exit(1)
-	}
+	// storage, err := sqlite.New(cfg.StoragePath)
+	// if err != nil {
+	// 	log.Error("failed to init storage", sl.Err(err))
+	// 	os.Exit(1)
+	// }
 
 	//todo init router (chi, render)
 	router := chi.NewRouter()
@@ -44,7 +43,24 @@ func main() {
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)
 	router.Use(middleware.Logger)
-	//todo init server
+
+	//init server
+	api := &api{addr: ":8080"}
+
+	mux := http.NewServeMux()
+
+	srv := &http.Server{
+		Addr:    api.addr,
+		Handler: mux,
+	}
+
+	mux.HandleFunc("GET /users", api.getUsersHandler)
+	mux.HandleFunc("POST /users", api.createUsersHandler)
+
+	err := srv.ListenAndServe()
+	if err != nil {
+		panic(err)
+	}
 }
 
 func setupLogger(env string) *slog.Logger {
